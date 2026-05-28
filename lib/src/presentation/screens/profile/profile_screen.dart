@@ -18,13 +18,13 @@ class ProfileScreen extends ConsumerWidget {
     final mode = ref.watch(themeModeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profilo')),
+      appBar: AppBar(title: const Text('Profile')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           userAsync.when(
             data: (user) {
-              if (user == null) return const Text('Profilo non disponibile.');
+              if (user == null) return const Text('Profile not available.');
               final level = levelFromXp(user.totalXp);
               final xpLeft = xpToNextLevel(user.totalXp);
               return Card(
@@ -36,19 +36,19 @@ class ProfileScreen extends ConsumerWidget {
                       Text(user.displayName, style: Theme.of(context).textTheme.titleLarge),
                       Text('@${user.username}'),
                       const SizedBox(height: 8),
-                      Text('XP totali: ${user.totalXp}'),
-                      Text('Livello: $level'),
-                      Text('XP al prossimo livello: $xpLeft'),
+                      Text('Total XP: ${user.totalXp}'),
+                      Text('Level: $level'),
+                      Text('XP to next level: $xpLeft'),
                     ],
                   ),
                 ),
               );
             },
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('Errore profilo: $e'),
+            error: (e, _) => Text('Profile error: $e'),
           ),
           const SizedBox(height: 12),
-          const Text('Tema'),
+          const Text('Theme'),
           const SizedBox(height: 8),
           SegmentedButton<ThemeMode>(
             segments: const [
@@ -62,10 +62,10 @@ class ProfileScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 16),
-          const Text('Storico completamenti'),
+          const Text('Completion history'),
           historyAsync.when(
             data: (rows) {
-              if (rows.isEmpty) return const Text('Nessun completamento.');
+              if (rows.isEmpty) return const Text('No completions yet.');
               final totalCompleted = rows.length;
               final totalGainedXp = rows.fold<int>(0, (sum, row) => sum + row.gainedXp);
               final historyTiles = rows.take(10).map<Widget>((e) {
@@ -83,13 +83,13 @@ class ProfileScreen extends ConsumerWidget {
                     0,
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Text('Completamenti: $totalCompleted | XP guadagnati: $totalGainedXp'),
+                      child: Text('Completions: $totalCompleted | XP earned: $totalGainedXp'),
                     ),
                   ),
               );
             },
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('Errore storico: $e'),
+            error: (e, _) => Text('History error: $e'),
           ),
           const SizedBox(height: 20),
           FilledButton.tonal(
