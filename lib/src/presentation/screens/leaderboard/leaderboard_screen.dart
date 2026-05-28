@@ -14,8 +14,9 @@ class LeaderboardScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Leaderboard')),
       body: leaderboardAsync.when(
         data: (rows) {
-          if (rows.isEmpty)
+          if (rows.isEmpty) {
             return const Center(child: Text('No leaderboard data.'));
+          }
           return ListView.builder(
             itemCount: rows.length,
             itemBuilder: (context, index) {
