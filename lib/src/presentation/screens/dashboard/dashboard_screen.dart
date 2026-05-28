@@ -22,14 +22,14 @@ class DashboardScreen extends ConsumerWidget {
           householdAsync.when(
             data: (household) => Text(
               household == null
-                  ? 'Nessuna household selezionata'
+                  ? 'No household selected'
                   : 'Household: ${household.name} (${household.id})',
             ),
             loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('Errore household: $e'),
+            error: (e, _) => Text('Household error: $e'),
           ),
           const SizedBox(height: 16),
-          const Text('Task giornalieri', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Today\'s tasks', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           tasksAsync.when(
             data: (tasks) {
@@ -42,7 +42,7 @@ class DashboardScreen extends ConsumerWidget {
                     t.dueDate!.day == today.day;
               }).toList();
 
-              if (daily.isEmpty) return const Text('Nessun task in scadenza oggi.');
+              if (daily.isEmpty) return const Text('No tasks due today.');
 
               return Column(
                 children: daily
@@ -58,14 +58,14 @@ class DashboardScreen extends ConsumerWidget {
               );
             },
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('Errore tasks: $e'),
+            error: (e, _) => Text('Task error: $e'),
           ),
           const SizedBox(height: 24),
           const Text('Top leaderboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           leaderboardAsync.when(
             data: (rows) {
-              if (rows.isEmpty) return const Text('Nessun membro.');
+              if (rows.isEmpty) return const Text('No members found.');
               return Column(
                 children: rows.take(3).toList().asMap().entries.map((entry) {
                   final i = entry.key + 1;
@@ -79,7 +79,7 @@ class DashboardScreen extends ConsumerWidget {
               );
             },
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('Errore leaderboard: $e'),
+            error: (e, _) => Text('Leaderboard error: $e'),
           ),
         ],
       ),
