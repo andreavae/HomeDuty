@@ -1,6 +1,6 @@
 # HomeDuty
 
-App Flutter per gestire faccende domestiche condivise, con backend Supabase.
+Flutter app to manage shared household chores with a Supabase backend.
 
 ## Stack
 - Flutter
@@ -8,37 +8,34 @@ App Flutter per gestire faccende domestiche condivise, con backend Supabase.
 - GoRouter
 - Supabase (Auth + PostgreSQL)
 
-## 1. Prerequisiti
-- Flutter SDK installato e disponibile in PATH
-- Account Supabase
+## 1. Prerequisites
+- Flutter SDK installed and available in PATH
+- Supabase account
 
-## 2. Setup progetto
-1. Recupera `SUPABASE_URL` e `SUPABASE_ANON_KEY` dal progetto Supabase
-2. Esegui:
+## 2. Project setup
+1. Get `SUPABASE_URL` and `SUPABASE_ANON_KEY` from your Supabase project.
+2. Run:
    - `flutter pub get`
    - `flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`
 
-## 3. Setup database Supabase
-1. Crea un nuovo progetto Supabase
-2. Apri SQL Editor
-3. Esegui il file `supabase/schema.sql`
+## 3. Supabase database setup
+1. Create a new Supabase project.
+2. Open SQL Editor.
+3. Run `supabase/schema.sql`.
 
-## 4. Funzionalita implementate
-- Login e registrazione via username univoco
-- Username univoco lato database
-- Household, membership e task condivisi
-- Task CRUD con stato, ricorrenza e XP
-- Completamento task con assegnazione XP automatica
-- Leaderboard household
-- Storico completamenti
-- Profilo con XP, livello e statistiche
+## 4. Implemented features
+- Login and registration with unique username
+- Database-level unique username enforcement
+- Shared household, membership, and tasks
+- Task CRUD with status, recurrence, and XP
+- Task completion with automatic XP assignment
+- Household leaderboard
+- Task completion history
+- User profile with XP, level, and stats
 - Dark mode
 
-## 5. Struttura architettura
+## 5. Architecture structure
 - `lib/data`
 - `lib/domain`
 - `lib/presentation`
 - `lib/core`
-
-## Nota
-In questo ambiente `flutter` non era disponibile da terminale. I file del progetto sono stati creati manualmente, ma per eseguire l'app devi installare Flutter localmente.
