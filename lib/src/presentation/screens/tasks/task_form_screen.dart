@@ -144,11 +144,13 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 data: (members) {
                   final hasCurrentSelection = _assignedUserId == null ||
                       members.any((m) => m.id == _assignedUserId);
-                  final effectiveValue = hasCurrentSelection ? _assignedUserId : null;
+                  final effectiveValue =
+                      hasCurrentSelection ? _assignedUserId : null;
 
                   return DropdownButtonFormField<String?>(
-                    value: effectiveValue,
-                    decoration: const InputDecoration(labelText: 'Utente assegnato'),
+                    initialValue: effectiveValue,
+                    decoration:
+                        const InputDecoration(labelText: 'Utente assegnato'),
                     items: [
                       const DropdownMenuItem<String?>(
                         value: null,
@@ -161,7 +163,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                         ),
                       ),
                     ],
-                    onChanged: (value) => setState(() => _assignedUserId = value),
+                    onChanged: (value) =>
+                        setState(() => _assignedUserId = value),
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
@@ -169,12 +172,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               ),
           const SizedBox(height: 12),
           DropdownButtonFormField<TaskStatus>(
-            value: _status,
+            initialValue: _status,
             decoration: const InputDecoration(labelText: 'Stato'),
             items: const [
               DropdownMenuItem(value: TaskStatus.todo, child: Text('Todo')),
-              DropdownMenuItem(value: TaskStatus.inProgress, child: Text('In Progress')),
-              DropdownMenuItem(value: TaskStatus.completed, child: Text('Completed')),
+              DropdownMenuItem(
+                  value: TaskStatus.inProgress, child: Text('In Progress')),
+              DropdownMenuItem(
+                  value: TaskStatus.completed, child: Text('Completed')),
             ],
             onChanged: (value) {
               if (value != null) setState(() => _status = value);
@@ -182,12 +187,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<TaskRecurrence>(
-            value: _recurrence,
+            initialValue: _recurrence,
             decoration: const InputDecoration(labelText: 'Ricorrenza'),
             items: const [
               DropdownMenuItem(value: TaskRecurrence.none, child: Text('None')),
-              DropdownMenuItem(value: TaskRecurrence.daily, child: Text('Daily')),
-              DropdownMenuItem(value: TaskRecurrence.weekly, child: Text('Weekly')),
+              DropdownMenuItem(
+                  value: TaskRecurrence.daily, child: Text('Daily')),
+              DropdownMenuItem(
+                  value: TaskRecurrence.weekly, child: Text('Weekly')),
             ],
             onChanged: (value) {
               if (value != null) setState(() => _recurrence = value);
