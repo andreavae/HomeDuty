@@ -52,7 +52,7 @@ class TaskListScreen extends ConsumerWidget {
       ),
       body: tasksAsync.when(
         data: (tasks) {
-          if (tasks.isEmpty) return const Center(child: Text('Nessun task trovato.'));
+          if (tasks.isEmpty) return const Center(child: Text('No tasks found.'));
 
           return ListView.builder(
             itemCount: tasks.length,
@@ -79,10 +79,10 @@ class TaskListScreen extends ConsumerWidget {
                       }
                     },
                     itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'edit', child: Text('Modifica')),
-                      const PopupMenuItem(value: 'delete', child: Text('Elimina')),
+                      const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                      const PopupMenuItem(value: 'delete', child: Text('Delete')),
                       if (task.status != TaskStatus.completed)
-                        const PopupMenuItem(value: 'complete', child: Text('Completa')), 
+                        const PopupMenuItem(value: 'complete', child: Text('Complete')),
                     ],
                   ),
                 ),
@@ -91,7 +91,7 @@ class TaskListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Errore caricamento task: $e')),
+        error: (e, _) => Center(child: Text('Error loading tasks: $e')),
       ),
     );
   }
