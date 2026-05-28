@@ -1,3 +1,16 @@
+# Flutter and Dart tool artifacts
 .dart_tool/
+.packages
+.flutter-plugins
 .flutter-plugins-dependencies
-pubspec.lock
+
+# Build outputs
+build/
+
+# IDE and editor files
+.idea/
+*.iml
+.vscode/
+
+# Local project metadata
+.metadata
