@@ -28,14 +28,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await ref.read(authRepositoryProvider).login(
         username: _usernameCtrl.text.trim(),
-            password: _passwordCtrl.text.trim(),
-          );
+        password: _passwordCtrl.text.trim(),
+      );
       if (!mounted) return;
       context.go('/household');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login fallito: $e')),
+        SnackBar(content: Text('Login failed: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -63,12 +63,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _loading ? null : _login,
-              child: Text(_loading ? 'Attendi...' : 'Login'),
+              child: Text(_loading ? 'Please wait...' : 'Login'),
             ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () => context.go('/register'),
-              child: const Text('Crea un account'),
+              child: const Text('Create an account'),
             ),
           ],
         ),
