@@ -29,10 +29,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).register(
-        username: _usernameCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-        displayName: _displayNameCtrl.text.trim(),
-      );
+            username: _usernameCtrl.text.trim(),
+            password: _passwordCtrl.text.trim(),
+            displayName: _displayNameCtrl.text.trim(),
+          );
       if (!mounted) return;
       context.go('/household');
     } catch (e) {

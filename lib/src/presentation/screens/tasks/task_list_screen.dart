@@ -39,8 +39,10 @@ class TaskListScreen extends ConsumerWidget {
               items: const [
                 DropdownMenuItem(value: TaskFilter.all, child: Text('All')),
                 DropdownMenuItem(value: TaskFilter.todo, child: Text('Todo')),
-                DropdownMenuItem(value: TaskFilter.inProgress, child: Text('In Progress')),
-                DropdownMenuItem(value: TaskFilter.completed, child: Text('Completed')),
+                DropdownMenuItem(
+                    value: TaskFilter.inProgress, child: Text('In Progress')),
+                DropdownMenuItem(
+                    value: TaskFilter.completed, child: Text('Completed')),
               ],
             ),
           ),
@@ -52,7 +54,8 @@ class TaskListScreen extends ConsumerWidget {
       ),
       body: tasksAsync.when(
         data: (tasks) {
-          if (tasks.isEmpty) return const Center(child: Text('No tasks found.'));
+          if (tasks.isEmpty)
+            return const Center(child: Text('No tasks found.'));
 
           return ListView.builder(
             itemCount: tasks.length,
@@ -71,18 +74,24 @@ class TaskListScreen extends ConsumerWidget {
                           await _openForm(context, task: task);
                           break;
                         case 'delete':
-                          await ref.read(taskRepositoryProvider).deleteTask(task.id);
+                          await ref
+                              .read(taskRepositoryProvider)
+                              .deleteTask(task.id);
                           break;
                         case 'complete':
-                          await ref.read(taskRepositoryProvider).completeTask(task);
+                          await ref
+                              .read(taskRepositoryProvider)
+                              .completeTask(task);
                           break;
                       }
                     },
                     itemBuilder: (_) => [
                       const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      const PopupMenuItem(
+                          value: 'delete', child: Text('Delete')),
                       if (task.status != TaskStatus.completed)
-                        const PopupMenuItem(value: 'complete', child: Text('Complete')),
+                        const PopupMenuItem(
+                            value: 'complete', child: Text('Complete')),
                     ],
                   ),
                 ),

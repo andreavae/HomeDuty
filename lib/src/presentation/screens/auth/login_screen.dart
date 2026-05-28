@@ -27,9 +27,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).login(
-        username: _usernameCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-      );
+            username: _usernameCtrl.text.trim(),
+            password: _passwordCtrl.text.trim(),
+          );
       if (!mounted) return;
       context.go('/household');
     } catch (e) {

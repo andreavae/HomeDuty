@@ -69,7 +69,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
     if (title.isEmpty || xp <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title and a valid XP value are required.')),
+        const SnackBar(
+            content: Text('Title and a valid XP value are required.')),
       );
       return;
     }
@@ -149,7 +150,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
                   return DropdownButtonFormField<String?>(
                     initialValue: effectiveValue,
-                    decoration: const InputDecoration(labelText: 'Assigned user'),
+                    decoration:
+                        const InputDecoration(labelText: 'Assigned user'),
                     items: [
                       const DropdownMenuItem<String?>(
                         value: null,

@@ -29,7 +29,8 @@ class DashboardScreen extends ConsumerWidget {
             error: (e, _) => Text('Household error: $e'),
           ),
           const SizedBox(height: 16),
-          const Text('Today\'s tasks', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Today\'s tasks',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           tasksAsync.when(
             data: (tasks) {
@@ -61,7 +62,8 @@ class DashboardScreen extends ConsumerWidget {
             error: (e, _) => Text('Task error: $e'),
           ),
           const SizedBox(height: 24),
-          const Text('Top leaderboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Top leaderboard',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           leaderboardAsync.when(
             data: (rows) {

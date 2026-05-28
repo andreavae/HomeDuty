@@ -33,7 +33,8 @@ class ProfileScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.displayName, style: Theme.of(context).textTheme.titleLarge),
+                      Text(user.displayName,
+                          style: Theme.of(context).textTheme.titleLarge),
                       Text('@${user.username}'),
                       const SizedBox(height: 8),
                       Text('Total XP: ${user.totalXp}'),
@@ -67,7 +68,8 @@ class ProfileScreen extends ConsumerWidget {
             data: (rows) {
               if (rows.isEmpty) return const Text('No completions yet.');
               final totalCompleted = rows.length;
-              final totalGainedXp = rows.fold<int>(0, (sum, row) => sum + row.gainedXp);
+              final totalGainedXp =
+                  rows.fold<int>(0, (sum, row) => sum + row.gainedXp);
               final historyTiles = rows.take(10).map<Widget>((e) {
                 return ListTile(
                   dense: true,
@@ -83,7 +85,8 @@ class ProfileScreen extends ConsumerWidget {
                     0,
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Text('Completions: $totalCompleted | XP earned: $totalGainedXp'),
+                      child: Text(
+                          'Completions: $totalCompleted | XP earned: $totalGainedXp'),
                     ),
                   ),
               );

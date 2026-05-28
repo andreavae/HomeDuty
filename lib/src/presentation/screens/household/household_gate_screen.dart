@@ -9,7 +9,8 @@ class HouseholdGateScreen extends ConsumerStatefulWidget {
   const HouseholdGateScreen({super.key});
 
   @override
-  ConsumerState<HouseholdGateScreen> createState() => _HouseholdGateScreenState();
+  ConsumerState<HouseholdGateScreen> createState() =>
+      _HouseholdGateScreenState();
 }
 
 class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
@@ -34,7 +35,9 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
   Future<void> _create() async {
     setState(() => _loading = true);
     try {
-      await ref.read(householdRepositoryProvider).createHousehold(_createCtrl.text.trim());
+      await ref
+          .read(householdRepositoryProvider)
+          .createHousehold(_createCtrl.text.trim());
       ref.invalidate(currentHouseholdProvider);
       if (!mounted) return;
       context.go('/app');
@@ -51,7 +54,9 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
   Future<void> _join() async {
     setState(() => _loading = true);
     try {
-      await ref.read(householdRepositoryProvider).joinHousehold(_joinCtrl.text.trim());
+      await ref
+          .read(householdRepositoryProvider)
+          .joinHousehold(_joinCtrl.text.trim());
       ref.invalidate(currentHouseholdProvider);
       if (!mounted) return;
       context.go('/app');
