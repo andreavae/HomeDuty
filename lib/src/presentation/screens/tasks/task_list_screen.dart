@@ -54,8 +54,9 @@ class TaskListScreen extends ConsumerWidget {
       ),
       body: tasksAsync.when(
         data: (tasks) {
-          if (tasks.isEmpty)
+          if (tasks.isEmpty) {
             return const Center(child: Text('No tasks found.'));
+          }
 
           return ListView.builder(
             itemCount: tasks.length,
