@@ -1,205 +1,218 @@
--- HomeDuty schema for Supabase
--- Run this file in Supabase SQL editor.
+-- 1. Estensioni
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-create extension if not exists pgcrypto;
-
-create table if not exists public.users (
-  id uuid primary key references auth.users(id) on delete cascade,
-  username text not null unique,
-  display_name text not null,
-  total_xp int not null default 0,
-  created_at timestamptz not null default now()
+-- 2. Tabelle (ordine corretto per le foreign keys)
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  total_xp INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create table if not exists public.households (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  owner_id uuid not null references public.users(id) on delete restrict,
-  created_at timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.households (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  owner_id UUID NOT NULL REFERENCES public.users(id) ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create table if not exists public.household_members (
-  id uuid primary key default gen_random_uuid(),
-  household_id uuid not null references public.households(id) on delete cascade,
-  user_id uuid not null references public.users(id) on delete cascade,
-  role text not null default 'member' check (role in ('owner', 'member')),
-  joined_at timestamptz not null default now(),
-  unique (household_id, user_id)
+CREATE TABLE IF NOT EXISTS public.household_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id UUID NOT NULL REFERENCES public.households(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (household_id, user_id)
 );
 
-create table if not exists public.tasks (
-  id uuid primary key default gen_random_uuid(),
-  household_id uuid not null references public.households(id) on delete cascade,
-  title text not null,
-  description text not null default '',
-  xp int not null check (xp > 0),
-  assigned_user_id uuid references public.users(id) on delete set null,
-  due_date timestamptz,
-  status text not null default 'todo' check (status in ('todo', 'in_progress', 'completed')),
-  recurrence text not null default 'none' check (recurrence in ('none', 'daily', 'weekly')),
-  created_by uuid not null references public.users(id) on delete restrict,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id UUID NOT NULL REFERENCES public.households(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  xp INT NOT NULL CHECK (xp > 0),
+  assigned_user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  due_date TIMESTAMPTZ,
+  status TEXT NOT NULL DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'completed')),
+  recurrence TEXT NOT NULL DEFAULT 'none' CHECK (recurrence IN ('none', 'daily', 'weekly')),
+  created_by UUID NOT NULL REFERENCES public.users(id) ON DELETE RESTRICT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create table if not exists public.task_completions (
-  id uuid primary key default gen_random_uuid(),
-  task_id uuid not null references public.tasks(id) on delete cascade,
-  completed_by uuid not null references public.users(id) on delete cascade,
-  gained_xp int not null check (gained_xp > 0),
-  completed_at timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.task_completions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
+  completed_by UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  gained_xp INT NOT NULL CHECK (gained_xp > 0),
+  completed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create or replace function public.update_updated_at_column()
-returns trigger
-language plpgsql
-as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
+-- 3. Funzioni e trigger
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
 $$;
 
-drop trigger if exists trg_tasks_updated_at on public.tasks;
-create trigger trg_tasks_updated_at
-before update on public.tasks
-for each row execute function public.update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_tasks_updated_at ON public.tasks;
+CREATE TRIGGER trg_tasks_updated_at
+BEFORE UPDATE ON public.tasks
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-create or replace function public.complete_task(p_task_id uuid, p_completed_by uuid)
-returns void
-language plpgsql
-security definer
-as $$
-declare
-  v_task public.tasks%rowtype;
-  v_is_member boolean;
-  v_next_due timestamptz;
-begin
-  select * into v_task
-  from public.tasks
-  where id = p_task_id
-  for update;
+CREATE OR REPLACE FUNCTION public.complete_task(p_task_id UUID, p_completed_by UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_task public.tasks%ROWTYPE;
+  v_is_member BOOLEAN;
+  v_next_due TIMESTAMPTZ;
+BEGIN
+  SELECT * INTO v_task
+  FROM public.tasks
+  WHERE id = p_task_id
+  FOR UPDATE;
 
-  if not found then
-    raise exception 'Task not found';
-  end if;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Task not found';
+  END IF;
 
-  select exists(
-    select 1
-    from public.household_members hm
-    where hm.household_id = v_task.household_id
-      and hm.user_id = p_completed_by
-  ) into v_is_member;
+  SELECT EXISTS(
+    SELECT 1
+    FROM public.household_members hm
+    WHERE hm.household_id = v_task.household_id
+      AND hm.user_id = p_completed_by
+  ) INTO v_is_member;
 
-  if not v_is_member then
-    raise exception 'User is not a member of the household';
-  end if;
+  IF NOT v_is_member THEN
+    RAISE EXCEPTION 'User is not a member of the household';
+  END IF;
 
-  if v_task.status = 'completed' then
-    return;
-  end if;
+  IF v_task.status = 'completed' THEN
+    RETURN;
+  END IF;
 
-  update public.tasks
-  set status = 'completed'
-  where id = p_task_id;
+  UPDATE public.tasks
+  SET status = 'completed'
+  WHERE id = p_task_id;
 
-  insert into public.task_completions(task_id, completed_by, gained_xp)
-  values (p_task_id, p_completed_by, v_task.xp);
+  INSERT INTO public.task_completions(task_id, completed_by, gained_xp)
+  VALUES (p_task_id, p_completed_by, v_task.xp);
 
-  update public.users
-  set total_xp = total_xp + v_task.xp
-  where id = p_completed_by;
+  UPDATE public.users
+  SET total_xp = total_xp + v_task.xp
+  WHERE id = p_completed_by;
 
-  if v_task.recurrence = 'daily' then
-    v_next_due := coalesce(v_task.due_date, now()) + interval '1 day';
-    update public.tasks
-    set status = 'todo',
+  IF v_task.recurrence = 'daily' THEN
+    v_next_due := COALESCE(v_task.due_date, now()) + INTERVAL '1 day';
+    UPDATE public.tasks
+    SET status = 'todo',
         due_date = v_next_due
-    where id = p_task_id;
-  elsif v_task.recurrence = 'weekly' then
-    v_next_due := coalesce(v_task.due_date, now()) + interval '7 day';
-    update public.tasks
-    set status = 'todo',
+    WHERE id = p_task_id;
+  ELSIF v_task.recurrence = 'weekly' THEN
+    v_next_due := COALESCE(v_task.due_date, now()) + INTERVAL '7 day';
+    UPDATE public.tasks
+    SET status = 'todo',
         due_date = v_next_due
-    where id = p_task_id;
-  end if;
-end;
+    WHERE id = p_task_id;
+  END IF;
+END;
 $$;
 
-alter table public.users enable row level security;
-alter table public.households enable row level security;
-alter table public.household_members enable row level security;
-alter table public.tasks enable row level security;
-alter table public.task_completions enable row level security;
+-- 4. RLS
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.households ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.household_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.task_completions ENABLE ROW LEVEL SECURITY;
 
--- users policies
-create policy if not exists users_select_self on public.users
-for select using (auth.uid() = id);
+-- Helper to check membership without triggering RLS recursion.
+CREATE OR REPLACE FUNCTION public.is_household_member(p_household_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.household_members hm
+    WHERE hm.household_id = p_household_id
+      AND hm.user_id = auth.uid()
+  );
+$$;
 
-create policy if not exists users_update_self on public.users
-for update using (auth.uid() = id);
+GRANT EXECUTE ON FUNCTION public.is_household_member(UUID) TO authenticated;
 
-create policy if not exists users_insert_self on public.users
-for insert with check (auth.uid() = id);
+-- 5. Policy (senza IF NOT EXISTS)
+DROP POLICY IF EXISTS users_select_self ON public.users;
+CREATE POLICY users_select_self ON public.users FOR SELECT USING (auth.uid() = id);
 
--- household_members policies
-create policy if not exists household_members_select on public.household_members
-for select using (
-  user_id = auth.uid()
-  or household_id in (
-    select household_id from public.household_members where user_id = auth.uid()
-  )
+DROP POLICY IF EXISTS users_update_self ON public.users;
+CREATE POLICY users_update_self ON public.users FOR UPDATE USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS users_insert_self ON public.users;
+CREATE POLICY users_insert_self ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS household_members_select ON public.household_members;
+CREATE POLICY household_members_select ON public.household_members FOR SELECT USING (
+  user_id = auth.uid() OR public.is_household_member(household_id)
 );
 
-create policy if not exists household_members_insert_self on public.household_members
-for insert with check (user_id = auth.uid());
+DROP POLICY IF EXISTS household_members_insert_self ON public.household_members;
+CREATE POLICY household_members_insert_self ON public.household_members FOR INSERT WITH CHECK (user_id = auth.uid());
 
--- households policies
-create policy if not exists households_select_member on public.households
-for select using (
-  id in (select household_id from public.household_members where user_id = auth.uid())
+DROP POLICY IF EXISTS households_select_member ON public.households;
+CREATE POLICY households_select_member ON public.households FOR SELECT USING (
+  owner_id = auth.uid()
+  OR id IN (SELECT household_id FROM public.household_members WHERE user_id = auth.uid())
 );
 
-create policy if not exists households_insert_owner on public.households
-for insert with check (owner_id = auth.uid());
+DROP POLICY IF EXISTS households_insert_owner ON public.households;
+CREATE POLICY households_insert_owner ON public.households FOR INSERT WITH CHECK (owner_id = auth.uid());
 
-create policy if not exists households_update_owner on public.households
-for update using (owner_id = auth.uid());
+DROP POLICY IF EXISTS households_update_owner ON public.households;
+CREATE POLICY households_update_owner ON public.households FOR UPDATE USING (owner_id = auth.uid());
 
--- tasks policies
-create policy if not exists tasks_select_member on public.tasks
-for select using (
-  household_id in (select household_id from public.household_members where user_id = auth.uid())
+DROP POLICY IF EXISTS tasks_select_member ON public.tasks;
+CREATE POLICY tasks_select_member ON public.tasks FOR SELECT USING (
+  household_id IN (SELECT household_id FROM public.household_members WHERE user_id = auth.uid())
 );
 
-create policy if not exists tasks_insert_member on public.tasks
-for insert with check (
-  household_id in (select household_id from public.household_members where user_id = auth.uid())
+DROP POLICY IF EXISTS tasks_insert_member ON public.tasks;
+CREATE POLICY tasks_insert_member ON public.tasks FOR INSERT WITH CHECK (
+  household_id IN (SELECT household_id FROM public.household_members WHERE user_id = auth.uid())
 );
 
-create policy if not exists tasks_update_member on public.tasks
-for update using (
-  household_id in (select household_id from public.household_members where user_id = auth.uid())
+DROP POLICY IF EXISTS tasks_update_member ON public.tasks;
+CREATE POLICY tasks_update_member ON public.tasks FOR UPDATE USING (
+  household_id IN (SELECT household_id FROM public.household_members WHERE user_id = auth.uid())
 );
 
-create policy if not exists tasks_delete_member on public.tasks
-for delete using (
-  household_id in (select household_id from public.household_members where user_id = auth.uid())
+DROP POLICY IF EXISTS tasks_delete_member ON public.tasks;
+CREATE POLICY tasks_delete_member ON public.tasks FOR DELETE USING (
+  household_id IN (SELECT household_id FROM public.household_members WHERE user_id = auth.uid())
 );
 
--- completions policies
-create policy if not exists completions_select_member on public.task_completions
-for select using (
-  task_id in (
-    select t.id
-    from public.tasks t
-    where t.household_id in (
-      select household_id from public.household_members where user_id = auth.uid()
+DROP POLICY IF EXISTS completions_select_member ON public.task_completions;
+CREATE POLICY completions_select_member ON public.task_completions FOR SELECT USING (
+  task_id IN (
+    SELECT t.id FROM public.tasks t
+    WHERE t.household_id IN (
+      SELECT household_id FROM public.household_members WHERE user_id = auth.uid()
     )
   )
 );
 
-create policy if not exists completions_insert_member on public.task_completions
-for insert with check (completed_by = auth.uid());
+DROP POLICY IF EXISTS completions_insert_member ON public.task_completions;
+CREATE POLICY completions_insert_member ON public.task_completions FOR INSERT WITH CHECK (completed_by = auth.uid());
 
-grant execute on function public.complete_task(uuid, uuid) to authenticated;
+-- 6. Grant
+GRANT EXECUTE ON FUNCTION public.complete_task(UUID, UUID) TO authenticated;

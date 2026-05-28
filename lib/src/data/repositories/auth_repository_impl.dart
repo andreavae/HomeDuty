@@ -13,7 +13,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   String _emailFromUsername(String username) {
     final normalized = username.trim().toLowerCase();
-    return '$normalized@homeduty.local';
+    final encoded = normalized.codeUnits
+        .map((unit) => unit.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return 'u$encoded@homeduty.app';
   }
 
   @override
@@ -24,14 +27,54 @@ class AuthRepositoryImpl implements AuthRepository {
     final authUser = _client.auth.currentUser;
     if (authUser == null) return null;
 
-    final map = await _client
+    var map = await _client
         .from('users')
         .select()
         .eq('id', authUser.id)
         .maybeSingle();
 
+    if (map == null) {
+      await _ensureProfileForUser(authUser);
+      map = await _client
+          .from('users')
+          .select()
+          .eq('id', authUser.id)
+          .maybeSingle();
+    }
+
     if (map == null) return null;
     return appUserFromMap(map);
+  }
+
+  Future<void> _ensureProfileForUser(
+    User authUser, {
+    String? fallbackUsername,
+    String? fallbackDisplayName,
+  }) async {
+    final existing = await _client
+        .from('users')
+        .select('id')
+        .eq('id', authUser.id)
+        .maybeSingle();
+    if (existing != null) return;
+
+    final meta = authUser.userMetadata ?? <String, dynamic>{};
+    final username = (meta['username'] as String?) ?? fallbackUsername;
+    final displayName =
+        (meta['display_name'] as String?) ?? fallbackDisplayName ?? username;
+
+    if (username == null || username.trim().isEmpty) {
+      throw Exception('Cannot create user profile: username is missing.');
+    }
+
+    await _client.from('users').upsert({
+      'id': authUser.id,
+      'username': username,
+      'display_name': (displayName == null || displayName.trim().isEmpty)
+          ? username
+          : displayName,
+      'total_xp': 0,
+    });
   }
 
   @override
@@ -72,12 +115,20 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('Registrazione fallita: utente non creato.');
     }
 
-    await _client.from('users').upsert({
-      'id': user.id,
-      'username': username,
-      'display_name': displayName,
-      'total_xp': 0,
-    });
+    if (res.session == null) {
+      throw Exception(
+        'Registration completed but no active session was created. '
+        'Confirm your email (if enabled) and then login, or disable email confirmation in Supabase Auth settings.',
+      );
+    }
+
+    // With email confirmation enabled, Supabase may return no active session.
+    // In that case RLS may block profile creation until first confirmed login.
+    await _ensureProfileForUser(
+      user,
+      fallbackUsername: username,
+      fallbackDisplayName: displayName,
+    );
   }
 
   @override
@@ -86,7 +137,16 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     final email = _emailFromUsername(username);
-    await _client.auth.signInWithPassword(email: email, password: password);
+    final res =
+        await _client.auth.signInWithPassword(email: email, password: password);
+    final user = res.user;
+    if (user != null) {
+      await _ensureProfileForUser(
+        user,
+        fallbackUsername: username,
+        fallbackDisplayName: username,
+      );
+    }
   }
 
   @override
