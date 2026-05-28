@@ -40,7 +40,6 @@ void main() {
       expect(household.ownerId, 'user-123');
       expect(household.createdAt, now);
     });
-
   });
 
   group('TaskItem', () {

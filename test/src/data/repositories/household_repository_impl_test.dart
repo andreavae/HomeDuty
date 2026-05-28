@@ -34,7 +34,8 @@ void main() {
       householdRepository = HouseholdRepositoryImpl(mockClient);
     });
 
-    test('getCurrentHousehold returns null when user has no household', () async {
+    test('getCurrentHousehold returns null when user has no household',
+        () async {
       final mockQueryBuilder = MockPostgrestQueryBuilder();
       final mockFilterBuilder = MockPostgrestFilterBuilder();
 
@@ -69,8 +70,10 @@ void main() {
         },
       );
 
-      when(() => mockClient.from('households')).thenReturn(householdsQueryBuilder);
-      when(() => householdsQueryBuilder.select()).thenReturn(householdsFilterBuilder);
+      when(() => mockClient.from('households'))
+          .thenReturn(householdsQueryBuilder);
+      when(() => householdsQueryBuilder.select())
+          .thenReturn(householdsFilterBuilder);
       when(() => householdsFilterBuilder.eq('id', 'household-123'))
           .thenReturn(householdsFilterBuilder);
       when(() => householdsFilterBuilder.maybeSingle()).thenAnswer(
