@@ -69,7 +69,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
     if (title.isEmpty || xp <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titolo e XP validi sono obbligatori.')),
+        const SnackBar(content: Text('Title and a valid XP value are required.')),
       );
       return;
     }
@@ -92,7 +92,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         );
       } else {
         final household = await ref.read(currentHouseholdProvider.future);
-        if (household == null) throw Exception('Household non trovata.');
+        if (household == null) throw Exception('Household not found.');
 
         await repo.createTask(
           householdId: household.id,
@@ -110,7 +110,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore salvataggio task: $e')),
+        SnackBar(content: Text('Error saving task: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -120,18 +120,18 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Modifica task' : 'Nuovo task')),
+      appBar: AppBar(title: Text(isEdit ? 'Edit task' : 'New task')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _titleCtrl,
-            decoration: const InputDecoration(labelText: 'Titolo'),
+            decoration: const InputDecoration(labelText: 'Title'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _descriptionCtrl,
-            decoration: const InputDecoration(labelText: 'Descrizione'),
+            decoration: const InputDecoration(labelText: 'Description'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -149,12 +149,11 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
                   return DropdownButtonFormField<String?>(
                     initialValue: effectiveValue,
-                    decoration:
-                        const InputDecoration(labelText: 'Utente assegnato'),
+                    decoration: const InputDecoration(labelText: 'Assigned user'),
                     items: [
                       const DropdownMenuItem<String?>(
                         value: null,
-                        child: Text('Non assegnato'),
+                        child: Text('Unassigned'),
                       ),
                       ...members.map(
                         (m) => DropdownMenuItem<String?>(
@@ -168,12 +167,12 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
-                error: (e, _) => Text('Errore caricamento membri: $e'),
+                error: (e, _) => Text('Error loading members: $e'),
               ),
           const SizedBox(height: 12),
           DropdownButtonFormField<TaskStatus>(
             initialValue: _status,
-            decoration: const InputDecoration(labelText: 'Stato'),
+            decoration: const InputDecoration(labelText: 'Status'),
             items: const [
               DropdownMenuItem(value: TaskStatus.todo, child: Text('Todo')),
               DropdownMenuItem(
@@ -188,7 +187,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           const SizedBox(height: 12),
           DropdownButtonFormField<TaskRecurrence>(
             initialValue: _recurrence,
-            decoration: const InputDecoration(labelText: 'Ricorrenza'),
+            decoration: const InputDecoration(labelText: 'Recurrence'),
             items: const [
               DropdownMenuItem(value: TaskRecurrence.none, child: Text('None')),
               DropdownMenuItem(
@@ -203,8 +202,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           const SizedBox(height: 12),
           ListTile(
             title: Text(_dueDate == null
-                ? 'Nessuna scadenza'
-                : 'Scadenza: ${_dueDate!.toLocal().toIso8601String().split('T').first}'),
+                ? 'No due date'
+                : 'Due date: ${_dueDate!.toLocal().toIso8601String().split('T').first}'),
             trailing: IconButton(
               onPressed: _pickDate,
               icon: const Icon(Icons.calendar_month_outlined),
@@ -213,7 +212,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _loading ? null : _save,
-            child: Text(_loading ? 'Salvataggio...' : 'Salva'),
+            child: Text(_loading ? 'Saving...' : 'Save'),
           ),
         ],
       ),
