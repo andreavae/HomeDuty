@@ -29,16 +29,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).register(
-            username: _usernameCtrl.text.trim(),
+        username: _usernameCtrl.text.trim(),
         password: _passwordCtrl.text.trim(),
-            displayName: _displayNameCtrl.text.trim(),
-          );
+        displayName: _displayNameCtrl.text.trim(),
+      );
       if (!mounted) return;
       context.go('/household');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registrazione fallita: $e')),
+        SnackBar(content: Text('Registration failed: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -48,14 +48,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrazione')),
+      appBar: AppBar(title: const Text('Register')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: _usernameCtrl,
-              decoration: const InputDecoration(labelText: 'Username univoco'),
+              decoration: const InputDecoration(labelText: 'Unique username'),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -71,11 +71,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _loading ? null : _register,
-              child: Text(_loading ? 'Attendi...' : 'Crea account'),
+              child: Text(_loading ? 'Please wait...' : 'Create account'),
             ),
             TextButton(
               onPressed: () => context.go('/login'),
-              child: const Text('Hai gia un account? Login'),
+              child: const Text('Already have an account? Login'),
             ),
           ],
         ),
