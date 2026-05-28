@@ -41,7 +41,7 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore creazione household: $e')),
+        SnackBar(content: Text('Error creating household: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -58,7 +58,7 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore join household: $e')),
+        SnackBar(content: Text('Error joining household: $e')),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -79,19 +79,19 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Crea una nuova household'),
+          const Text('Create a new household'),
           const SizedBox(height: 8),
           TextField(
             controller: _createCtrl,
-            decoration: const InputDecoration(labelText: 'Nome household'),
+            decoration: const InputDecoration(labelText: 'Household name'),
           ),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: _loading ? null : _create,
-            child: const Text('Crea household'),
+            child: const Text('Create household'),
           ),
           const Divider(height: 32),
-          const Text('Oppure unisciti a una household esistente'),
+          const Text('Or join an existing household'),
           const SizedBox(height: 8),
           TextField(
             controller: _joinCtrl,
@@ -100,7 +100,7 @@ class _HouseholdGateScreenState extends ConsumerState<HouseholdGateScreen> {
           const SizedBox(height: 8),
           FilledButton.tonal(
             onPressed: _loading ? null : _join,
-            child: const Text('Unisciti'),
+            child: const Text('Join'),
           ),
         ],
       ),
